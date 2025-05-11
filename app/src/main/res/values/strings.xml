@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">PackPal</string>
+    <string name="add_new_trip">Add new trip</string>
+    <string name="hint_trip_name">Nombre del Viaje (ej: Vacaciones Verano)</string>
+    <string name="hint_trip_destination">Destino (ej: Roma, Italia)</string>
+    <string name="hint_start_date_optional">Fecha Inicio (AAAA-MM-DD - Opcional)</string>
+    <string name="hint_end_date_optional">Fecha Fin (AAAA-MM-DD - Opcional)</string>
+    <string name="button_save_trip">Guardar Viaje</string>
+    <string name="title_activity_add_trip">Añadir Nuevo Viaje</string>
+    <string name="add_new_packing_item">Añadir nuevo ítem al equipaje</string>
+    <string name="title_activity_trip_detail">Detalles del Viaje</string>
+    <string name="action_edit_trip">Editar</string>
+    <string name="action_delete_trip">Borrar</string>
+    <string name="delete_trip_confirmation_title">Confirmar Borrado</string>
+    <string name="delete_trip_confirmation_message">¿Estás seguro de que quieres borrar el viaje \"%1$s\"? Esta acción no se puede deshacer.</string>
+    <string name="dialog_delete">Borrar</string>
+    <string name="dialog_cancel">Cancelar</string>
 </resources>
