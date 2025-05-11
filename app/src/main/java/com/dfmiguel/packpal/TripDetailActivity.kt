@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.collectLatest // Usaremos collectLatest para el d
 import kotlinx.coroutines.launch
 import android.content.DialogInterface // Para el diálogo
 import androidx.appcompat.app.AlertDialog // Para el diálogo
+import androidx.recyclerview.widget.LinearLayoutManager
+import kotlin.getValue
 
 class TripDetailActivity : AppCompatActivity() {
 
@@ -24,10 +26,14 @@ class TripDetailActivity : AppCompatActivity() {
     private lateinit var textViewDetailTripDestination: TextView
     private lateinit var textViewDetailStartDate: TextView
     private lateinit var textViewDetailEndDate: TextView
-    private lateinit var recyclerViewPackingItems: RecyclerView // Para la futura lista de ítems
-    private lateinit var fabAddPackingItem: FloatingActionButton // Para añadir ítems
+    // Para la lista de ítems de equipaje
+    private lateinit var recyclerViewPackingItems: RecyclerView
+    private lateinit var packingItemAdapter: PackingItemAdapter // NUEVO ADAPTADOR
+    private lateinit var fabAddPackingItem: FloatingActionButton
 
     private val tripDao by lazy { (application as PackPalApplication).tripDao }
+    private val packingItemDao by lazy { (application as PackPalApplication).packingItemDao } // NUEVO DAO
+
     private var currentTripId: Long = -1L // Para guardar el ID del viaje actual
 
     companion object {
@@ -61,11 +67,18 @@ class TripDetailActivity : AppCompatActivity() {
             return
         }
 
+        setupPackingItemsRecyclerView()
         observeTripDetails()
+        observePackingItems() // NUEVA FUNCIÓN
 
         fabAddPackingItem.setOnClickListener {
-            Toast.makeText(this, "Añadir ítem para Viaje ID: $currentTripId", Toast.LENGTH_SHORT).show()
-            // Aquí luego abriremos la pantalla/dialog para añadir un ítem de equipaje
+            //Toast.makeText(this, "Próximamente: Añadir ítem para Viaje ID: $currentTripId", Toast.LENGTH_SHORT).show() // Comentamos el Toast anterior
+            if (currentTripId != -1L) {
+                val dialog = AddPackingItemDialogFragment.newInstance(currentTripId)
+                dialog.show(supportFragmentManager, "AddPackingItemDialog")
+            } else {
+                Toast.makeText(this, "Error: No se puede añadir ítem sin ID de viaje válido", Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -85,6 +98,35 @@ class TripDetailActivity : AppCompatActivity() {
                     Toast.makeText(this@TripDetailActivity, "Viaje no encontrado", Toast.LENGTH_LONG).show()
                     // Podrías cerrar la actividad o mostrar un estado de error
                 }
+            }
+        }
+    }
+
+    private fun setupPackingItemsRecyclerView() {
+        packingItemAdapter = PackingItemAdapter(
+            onItemClicked = { item ->
+                Toast.makeText(this, "Ítem pulsado: ${item.name} (Próximamente: editar)", Toast.LENGTH_SHORT).show()
+                // Aquí luego podríamos abrir una pantalla para editar el ítem
+            },
+            onItemCheckedChange = { item, isChecked ->
+                // AQUÍ LUEGO ACTUALIZAREMOS EL ÍTEM EN LA BASE DE DATOS
+                val updatedItem = item.copy(isChecked = isChecked)
+                lifecycleScope.launch {
+                    packingItemDao.updatePackingItem(updatedItem)
+                }
+                // El Flow debería actualizar la UI automáticamente
+                Toast.makeText(this, "${item.name} marcado como ${if(isChecked) "empacado" else "no empacado"}", Toast.LENGTH_SHORT).show()
+            }
+        )
+        recyclerViewPackingItems.adapter = packingItemAdapter
+        recyclerViewPackingItems.layoutManager = LinearLayoutManager(this)
+    }
+
+    private fun observePackingItems() { // NUEVA FUNCIÓN
+        lifecycleScope.launch {
+            packingItemDao.getItemsForTrip(currentTripId).collectLatest { items ->
+                Log.d("TripDetailActivity", "Ítems para Viaje ID $currentTripId: ${items.size}")
+                packingItemAdapter.submitList(items)
             }
         }
     }

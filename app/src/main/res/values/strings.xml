@@ -15,4 +15,9 @@
     <string name="delete_trip_confirmation_message">¿Estás seguro de que quieres borrar el viaje \"%1$s\"? Esta acción no se puede deshacer.</string>
     <string name="dialog_delete">Borrar</string>
     <string name="dialog_cancel">Cancelar</string>
+    <string name="hint_item_name">Nombre del Ítem (ej: Camiseta manga corta)</string>
+    <string name="hint_item_category_optional">Categoría (ej: Ropa - Opcional)</string>
+    <string name="hint_item_quantity">Cantidad</string>
+    <string name="dialog_title_add_item">Añadir Nuevo Ítem</string>
+    <string name="dialog_add">Añadir</string>
 </resources>
