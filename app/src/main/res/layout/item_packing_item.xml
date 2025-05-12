@@ -1,39 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
     android:paddingStart="16dp"
-    android:paddingEnd="16dp"
+    android:paddingEnd="8dp"
     android:gravity="center_vertical"
-    android:background="?android:attr/selectableItemBackground">
+    android:minHeight="56dp" android:background="?android:attr/selectableItemBackground">
 
-    <CheckBox
-        android:id="@+id/checkBoxItemChecked"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        tools:checked="true"/>
+    <ImageView
+        android:id="@+id/imageViewItemCategoryIcon"
+        android:layout_width="24dp" android:layout_height="24dp"
+        android:layout_marginEnd="12dp"
+        app:tint="?attr/colorControlNormal" tools:srcCompat="@drawable/ic_category_other" /> <CheckBox
+    android:id="@+id/checkBoxItemChecked"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="12dp"
+    tools:checked="true"/>
 
-    <TextView
-        android:id="@+id/textViewItemName"
+    <LinearLayout
+        android:id="@+id/layoutItemDetailsClickable"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textAppearance="?attr/textAppearanceListItem"
-        android:textSize="16sp"
-        tools:text="Camiseta de Algodón Azul" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textViewItemName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceListItem"
+            android:textSize="16sp"
+            tools:text="Camiseta de Algodón Azul Muy Larga Para Probar Cómo Se Ve" />
+
+        <TextView
+            android:id="@+id/textViewItemCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceCaption"
+            android:textSize="12sp"
+            android:visibility="visible" tools:text="Ropa" />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/textViewItemQuantity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:textAppearance="?attr/textAppearanceListItemSecondary"
         android:textSize="14sp"
         tools:text="x2" />
+
+    <ImageButton
+        android:id="@+id/buttonEditItem"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/baseline_edit_24"
+        app:tint="?android:attr/textColorSecondary"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/edit_packing_item"
+        android:padding="8dp"/>
 
 </LinearLayout>

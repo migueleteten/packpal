@@ -14,15 +14,15 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.flow.collectLatest // Usaremos collectLatest para el detalle de un solo viaje
 import kotlinx.coroutines.launch
-import android.content.DialogInterface // Para el diálogo
 import androidx.appcompat.app.AlertDialog // Para el diálogo
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlin.getValue
+import androidx.recyclerview.widget.ItemTouchHelper
 
 class TripDetailActivity : AppCompatActivity() {
 
     private lateinit var toolbarTripDetail: MaterialToolbar
-    private lateinit var textViewDetailTripName: TextView
+    // private lateinit var textViewDetailTripName: TextView
     private lateinit var textViewDetailTripDestination: TextView
     private lateinit var textViewDetailStartDate: TextView
     private lateinit var textViewDetailEndDate: TextView
@@ -104,22 +104,62 @@ class TripDetailActivity : AppCompatActivity() {
 
     private fun setupPackingItemsRecyclerView() {
         packingItemAdapter = PackingItemAdapter(
-            onItemClicked = { item ->
-                Toast.makeText(this, "Ítem pulsado: ${item.name} (Próximamente: editar)", Toast.LENGTH_SHORT).show()
-                // Aquí luego podríamos abrir una pantalla para editar el ítem
-            },
             onItemCheckedChange = { item, isChecked ->
-                // AQUÍ LUEGO ACTUALIZAREMOS EL ÍTEM EN LA BASE DE DATOS
                 val updatedItem = item.copy(isChecked = isChecked)
                 lifecycleScope.launch {
                     packingItemDao.updatePackingItem(updatedItem)
                 }
-                // El Flow debería actualizar la UI automáticamente
-                Toast.makeText(this, "${item.name} marcado como ${if(isChecked) "empacado" else "no empacado"}", Toast.LENGTH_SHORT).show()
+            },
+            onEditItemClicked = { item ->
+                val dialog = AddPackingItemDialogFragment.newInstanceForEdit(currentTripId, item.id)
+                dialog.show(supportFragmentManager, "EditPackingItemDialog")
             }
         )
         recyclerViewPackingItems.adapter = packingItemAdapter
         recyclerViewPackingItems.layoutManager = LinearLayoutManager(this)
+
+        // --- INICIO: LÓGICA DEL SWIPE ---
+        val swipeCallback = object : ItemSwipeCallback(this) { // O tu nombre de clase de callback
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition.takeIf { it != RecyclerView.NO_POSITION } ?: return
+                // val item = packingItemAdapter.currentList[position] // Esta línea podría dar error si la lista cambia rápidamente
+                // Es más seguro obtener el ítem directamente del ViewHolder si tu ViewHolder lo expone,
+                // o si no, asumir que la posición es válida para la lista actual.
+                // Para ListAdapter, currentList es la forma de acceder, pero cuidado con modificaciones concurrentes.
+                // Vamos a intentar obtenerlo de forma segura:
+                val item = try {
+                    packingItemAdapter.currentList[position]
+                } catch (e: IndexOutOfBoundsException) {
+                    null // Si la posición ya no es válida, no hacemos nada
+                }
+
+                item?.let { // Solo si el ítem no es null
+                    if (direction == ItemTouchHelper.LEFT) { // Swipe a la Izquierda (Borrar)
+                        showDeletePackingItemConfirmationDialog(it)
+                    } else if (direction == ItemTouchHelper.RIGHT) { // Swipe a la Derecha (Marcar/Desmarcar)
+                        toggleItemCheckedState(it)
+                    }
+                }
+            }
+        }
+
+        val itemTouchHelper = ItemTouchHelper(swipeCallback) // Usamos el nombre de la variable
+        itemTouchHelper.attachToRecyclerView(recyclerViewPackingItems)
+        // --- FIN: LÓGICA DEL SWIPE ---
+    }
+
+    private fun toggleItemCheckedState(item: PackingItem) {
+        val newItemState = !item.isChecked // Invertimos el estado actual
+        val updatedItem = item.copy(isChecked = newItemState)
+        lifecycleScope.launch {
+            packingItemDao.updatePackingItem(updatedItem)
+            // El Toast es opcional, el feedback visual del swipe y el cambio de estado en la lista
+            // (tachado/destachado y el checkbox) deberían ser suficientes.
+            // Toast.makeText(this, "${updatedItem.name} ${if (newItemState) "marcado" else "desmarcado"}", Toast.LENGTH_SHORT).show()
+        }
+        // La lista se actualiza automáticamente gracias al Flow y ListAdapter
+        // El adapter debería redibujar el ítem, y su lógica de 'bind' aplicará el tachado/destachado
+        // y el estado del checkbox.
     }
 
     private fun observePackingItems() { // NUEVA FUNCIÓN
@@ -235,5 +275,42 @@ class TripDetailActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressedDispatcher.onBackPressed()
         return true
+    }
+
+    // NUEVA FUNCIÓN para el diálogo de confirmación de borrado de ítem
+    private fun showDeletePackingItemConfirmationDialog(item: PackingItem) {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.delete_trip_confirmation_title) // Podemos reutilizar o crear uno nuevo "Borrar Ítem"
+            .setMessage(getString(R.string.delete_trip_confirmation_message, item.name)) // Reutilizamos o creamos uno nuevo
+            .setIcon(R.drawable.baseline_delete_outline_24)
+            .setPositiveButton(R.string.dialog_delete) { dialog, _ ->
+                deletePackingItem(item)
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.dialog_cancel) { dialog, _ ->
+                // IMPORTANTE: Si cancelamos, el RecyclerView puede quedar en un estado "semi-deslizado"
+                // Necesitamos notificar al adaptador para que redibuje ese ítem a su posición original.
+                val position = packingItemAdapter.currentList.indexOf(item)
+                if (position != -1) {
+                    packingItemAdapter.notifyItemChanged(position)
+                }
+                dialog.dismiss()
+            }
+            .setOnCancelListener { // También cuando se cancela pulsando fuera o con el botón atrás
+                val position = packingItemAdapter.currentList.indexOf(item)
+                if (position != -1) {
+                    packingItemAdapter.notifyItemChanged(position)
+                }
+            }
+            .show()
+    }
+
+    // NUEVA FUNCIÓN para borrar el ítem
+    private fun deletePackingItem(item: PackingItem) {
+        lifecycleScope.launch {
+            packingItemDao.deletePackingItem(item)
+            Toast.makeText(this@TripDetailActivity, "Ítem '${item.name}' borrado", Toast.LENGTH_SHORT).show()
+            // La lista se actualiza automáticamente gracias al Flow y ListAdapter
+        }
     }
 }
