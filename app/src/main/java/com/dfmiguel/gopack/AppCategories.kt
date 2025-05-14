@@ -1,7 +1,7 @@
-package com.dfmiguel.packpal // Asegúrate que coincida con tu paquete
+package com.dfmiguel.gopack // Asegúrate que coincida con tu paquete
 
 // No olvides importar R si es necesario, aunque dentro del mismo módulo debería encontrarlo.
-// import com.dfmiguel.packpal.R // Descomenta si es necesario (Android Studio suele autocompletarlo)
+// import com.dfmiguel.gopack.R // Descomenta si es necesario (Android Studio suele autocompletarlo)
 
 object AppCategories {
 

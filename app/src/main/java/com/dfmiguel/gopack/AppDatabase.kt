@@ -1,4 +1,4 @@
-package com.dfmiguel.packpal
+package com.dfmiguel.gopack
 
 import android.content.Context
 import androidx.room.Database

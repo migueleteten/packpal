@@ -1,4 +1,4 @@
-package com.dfmiguel.packpal // Asegúrate que coincida con tu paquete
+package com.dfmiguel.gopack // Asegúrate que coincida con tu paquete
 
 import android.content.Context
 import android.graphics.Canvas

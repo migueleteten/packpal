@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -9,7 +10,7 @@
 
     <TextView
         android:id="@+id/textViewTripName"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?attr/textAppearanceListItem"
         android:textSize="18sp"
@@ -18,10 +19,55 @@
 
     <TextView
         android:id="@+id/textViewTripDestination"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?attr/textAppearanceListItemSecondary"
         android:textSize="14sp"
-        tools:text="Roma, Italia" />
+        tools:text="Roma, Italia"
+        android:layout_marginBottom="4dp"/>
 
-</LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/textViewTripStartDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAppearance="?attr/textAppearanceCaption"
+            android:textSize="12sp"
+            app:drawableStartCompat="@drawable/ic_date_range" app:drawableTint="?attr/colorControlNormal"
+            android:drawablePadding="4dp"
+            tools:text="15 Jul 2025" />
+
+        <TextView
+            android:id="@+id/textViewTripEndDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:textAppearance="?attr/textAppearanceCaption"
+            android:textSize="12sp"
+            tools:text="30 Jul 2025" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textViewItemProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?attr/textAppearanceCaption"
+        android:textSize="12sp"
+        tools:text="3/10 ítems"
+        android:layout_marginBottom="2dp"/>
+
+    <ProgressBar
+        android:id="@+id/progressBarTripItems"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100"
+        tools:progress="30"
+        android:progressTint="?attr/colorPrimary" android:layout_marginTop="0dp"/> </LinearLayout>

@@ -1,10 +1,14 @@
-package com.dfmiguel.packpal // Asegúrate que coincida con tu paquete
+package com.dfmiguel.gopack // Asegúrate que coincida con tu paquete
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -22,57 +26,63 @@ import androidx.recyclerview.widget.ItemTouchHelper
 class TripDetailActivity : AppCompatActivity() {
 
     private lateinit var toolbarTripDetail: MaterialToolbar
-    // private lateinit var textViewDetailTripName: TextView
+    private lateinit var textViewDetailTripName: TextView
     private lateinit var textViewDetailTripDestination: TextView
     private lateinit var textViewDetailStartDate: TextView
     private lateinit var textViewDetailEndDate: TextView
-    // Para la lista de ítems de equipaje
+
+    // Vistas para la lista de ítems y estado vacío
     private lateinit var recyclerViewPackingItems: RecyclerView
-    private lateinit var packingItemAdapter: PackingItemAdapter // NUEVO ADAPTADOR
+    private lateinit var packingItemAdapter: PackingItemAdapter
     private lateinit var fabAddPackingItem: FloatingActionButton
+    private lateinit var layoutEmptyPackingList: LinearLayout // NUEVA VARIABLE
+    private lateinit var buttonUseTemplate: Button          // NUEVA VARIABLE
 
-    private val tripDao by lazy { (application as PackPalApplication).tripDao }
-    private val packingItemDao by lazy { (application as PackPalApplication).packingItemDao } // NUEVO DAO
+    // DAOs
+    private val tripDao by lazy { (application as GoPackApplication).tripDao } // Asumiendo que renombraste GoPackApplication
+    private val packingItemDao by lazy { (application as GoPackApplication).packingItemDao }
 
-    private var currentTripId: Long = -1L // Para guardar el ID del viaje actual
+    private var currentTripId: Long = -1L
+    // private var existingTrip: Trip? = null // Comentamos o eliminamos si no se usa activamente
 
     companion object {
-        const val EXTRA_TRIP_ID = "extra_trip_id" // Clave para pasar el ID del viaje
+        const val EXTRA_TRIP_ID = "extra_trip_id"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_trip_detail)
 
-        // Configurar la Toolbar
         toolbarTripDetail = findViewById(R.id.toolbarTripDetail)
         setSupportActionBar(toolbarTripDetail)
-
-        // Habilitar el botón de "Atrás" en la ActionBar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        // supportActionBar?.title = getString(R.string.title_activity_trip_detail)
+        // El título se pone en observeTripDetails
 
-        // textViewDetailTripName = findViewById(R.id.textViewDetailTripName)
+        // Views para detalles del viaje
+        textViewDetailTripName = findViewById(R.id.textViewDetailTripName)
         textViewDetailTripDestination = findViewById(R.id.textViewDetailTripDestination)
         textViewDetailStartDate = findViewById(R.id.textViewDetailStartDate)
         textViewDetailEndDate = findViewById(R.id.textViewDetailEndDate)
+
+        // Views para lista de equipaje y estado vacío
         recyclerViewPackingItems = findViewById(R.id.recyclerViewPackingItems)
         fabAddPackingItem = findViewById(R.id.fabAddPackingItem)
+        layoutEmptyPackingList = findViewById(R.id.layoutEmptyPackingList) // NUEVA
+        buttonUseTemplate = findViewById(R.id.buttonUseTemplate)       // NUEVA
 
         currentTripId = intent.getLongExtra(EXTRA_TRIP_ID, -1L)
 
         if (currentTripId == -1L) {
             Toast.makeText(this, "Error: ID de viaje no encontrado", Toast.LENGTH_LONG).show()
-            finish() // Cierra la actividad si no hay ID
+            finish()
             return
         }
 
         setupPackingItemsRecyclerView()
         observeTripDetails()
-        observePackingItems() // NUEVA FUNCIÓN
+        observePackingItems() // Esta función ahora manejará la visibilidad
 
         fabAddPackingItem.setOnClickListener {
-            //Toast.makeText(this, "Próximamente: Añadir ítem para Viaje ID: $currentTripId", Toast.LENGTH_SHORT).show() // Comentamos el Toast anterior
             if (currentTripId != -1L) {
                 val dialog = AddPackingItemDialogFragment.newInstance(currentTripId)
                 dialog.show(supportFragmentManager, "AddPackingItemDialog")
@@ -80,23 +90,25 @@ class TripDetailActivity : AppCompatActivity() {
                 Toast.makeText(this, "Error: No se puede añadir ítem sin ID de viaje válido", Toast.LENGTH_LONG).show()
             }
         }
+
+        buttonUseTemplate.setOnClickListener { // NUEVO LISTENER
+            showTemplateSelectionDialog()
+        }
     }
 
     private fun observeTripDetails() {
         lifecycleScope.launch {
             tripDao.getTripById(currentTripId).collectLatest { trip ->
                 if (trip != null) {
-                    // Establecer el título de la Toolbar con el nombre del viaje
                     supportActionBar?.title = trip.name
-                    // textViewDetailTripName.text = trip.name
+                    textViewDetailTripName.text = trip.name // Puedes decidir si quieres mostrarlo aquí además de en la Toolbar
                     textViewDetailTripDestination.text = trip.destination
-                    textViewDetailStartDate.text = trip.startDate?.let { "Inicio: $it" } ?: "Fecha inicio no definida"
-                    textViewDetailEndDate.text = trip.endDate?.let { "Fin: $it" } ?: "Fecha fin no definida"
-                    // Aquí luego configuraríamos el adaptador para recyclerViewPackingItems con los ítems de este viaje
+                    textViewDetailStartDate.text = trip.startDate?.let { "Inicio: $it" } ?: getString(R.string.start_date_not_defined) // Nuevo String
+                    textViewDetailEndDate.text = trip.endDate?.let { "Fin: $it" } ?: getString(R.string.end_date_not_defined) // Nuevo String
                 } else {
+                    supportActionBar?.title = getString(R.string.title_activity_trip_detail)
                     Log.e("TripDetailActivity", "Viaje con ID $currentTripId no encontrado.")
-                    Toast.makeText(this@TripDetailActivity, "Viaje no encontrado", Toast.LENGTH_LONG).show()
-                    // Podrías cerrar la actividad o mostrar un estado de error
+                    // Considera cerrar o mostrar un error más persistente si el viaje no se encuentra
                 }
             }
         }
@@ -162,12 +174,64 @@ class TripDetailActivity : AppCompatActivity() {
         // y el estado del checkbox.
     }
 
-    private fun observePackingItems() { // NUEVA FUNCIÓN
+    private fun observePackingItems() {
         lifecycleScope.launch {
             packingItemDao.getItemsForTrip(currentTripId).collectLatest { items ->
                 Log.d("TripDetailActivity", "Ítems para Viaje ID $currentTripId: ${items.size}")
+                if (items.isEmpty()) {
+                    recyclerViewPackingItems.visibility = View.GONE // Oculta RecyclerView
+                    layoutEmptyPackingList.visibility = View.VISIBLE // Muestra layout de estado vacío
+                } else {
+                    recyclerViewPackingItems.visibility = View.VISIBLE // Muestra RecyclerView
+                    layoutEmptyPackingList.visibility = View.GONE    // Oculta layout de estado vacío
+                }
                 packingItemAdapter.submitList(items)
             }
+        }
+    }
+
+    // --- NUEVAS FUNCIONES PARA PLANTILLAS ---
+    private fun showTemplateSelectionDialog() {
+        val templateNames = AppTemplates.list.map { it.templateName }.toTypedArray()
+
+        AlertDialog.Builder(this) // Usamos el tema del diálogo
+            .setTitle(R.string.dialog_title_select_template)
+            .setItems(templateNames) { dialog, which ->
+                val selectedTemplate = AppTemplates.list[which]
+                loadTemplateItems(selectedTemplate)
+                dialog.dismiss() // Asegúrate de cerrar el diálogo
+            }
+            .setNegativeButton(R.string.dialog_cancel) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun loadTemplateItems(template: PackingListTemplate) {
+        if (currentTripId == -1L) {
+            Toast.makeText(this, "Error: ID de viaje no válido para cargar plantilla.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        lifecycleScope.launch {
+            val itemsToInsert = template.items.map { templateItem ->
+                PackingItem(
+                    // id se autogenera
+                    tripIdOwner = currentTripId,
+                    name = templateItem.name,
+                    category = templateItem.categoryInternalName,
+                    quantity = templateItem.quantity,
+                    isChecked = false // Las plantillas siempre empiezan con ítems no marcados
+                )
+            }
+
+            // Room es suficientemente inteligente para manejar esto en una transacción si se llama desde un suspend fun.
+            // Para muchas inserciones, un método DAO que acepte List<PackingItem> y lo haga en una transacción sería más óptimo.
+            // Por ahora, para el MVP, esto funcionará.
+            itemsToInsert.forEach { packingItemDao.insertPackingItem(it) }
+
+            Toast.makeText(this@TripDetailActivity, "Plantilla '${template.templateName}' cargada.", Toast.LENGTH_LONG).show()
+            // El Flow en observePackingItems() se encargará de actualizar la UI.
         }
     }
 
@@ -273,8 +337,15 @@ class TripDetailActivity : AppCompatActivity() {
 
     // Para manejar el botón de "Atrás" de la ActionBar
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressedDispatcher.onBackPressed()
+        setResult(Activity.RESULT_OK) // Indicar que algo pudo cambiar
+        finish() // O onBackPressedDispatcher.onBackPressed()
         return true
+    }
+
+    // Y para el botón "atrás" del sistema, modificamos finish()
+    override fun finish() {
+        setResult(Activity.RESULT_OK) // Asegurar que se devuelve resultado
+        super.finish()
     }
 
     // NUEVA FUNCIÓN para el diálogo de confirmación de borrado de ítem

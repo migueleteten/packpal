@@ -1,4 +1,4 @@
-package com.dfmiguel.packpal // Asegúrate que coincida con tu paquete
+package com.dfmiguel.gopack // Asegúrate que coincida con tu paquete
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -22,7 +22,7 @@ interface PackingItemDao {
 
     // Obtener todos los ítems para un ID de viaje específico, ordenados por nombre
     // Usamos :tripId para pasar el parámetro a la consulta SQL
-    @Query("SELECT * FROM packing_items_table WHERE tripIdOwner = :tripId ORDER BY name ASC")
+    @Query("SELECT * FROM packing_items_table WHERE tripIdOwner = :tripId ORDER BY category ASC, name ASC")
     fun getItemsForTrip(tripId: Long): Flow<List<PackingItem>>
 
     // Opcional: Una forma de obtener un ítem específico por su ID (útil si queremos editar un ítem individual)

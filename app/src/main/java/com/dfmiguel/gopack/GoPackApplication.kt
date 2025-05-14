@@ -1,8 +1,8 @@
-package com.dfmiguel.packpal // Asegúrate que coincida con tu paquete
+package com.dfmiguel.gopack // Asegúrate que coincida con tu paquete
 
 import android.app.Application
 
-class PackPalApplication : Application() {
+class GoPackApplication : Application() {
     val database: AppDatabase by lazy { AppDatabase.getInstance(this) }
     val tripDao: TripDao by lazy { database.tripDao() }
     val packingItemDao: PackingItemDao by lazy { database.packingItemDao() } // <--- ¡AÑADE ESTA LÍNEA!

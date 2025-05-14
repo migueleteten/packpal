@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="gopack_orange_primary">#E67E22</color>
+    <color name="gopack_orange_primary_ripple">#E67E22</color>
+    <color name="gopack_blue_dark_background">#34495E</color> <color name="gopack_item_checked_blue_bg">#4A6572</color>
+    <color name="gopack_beige_on_primary">#F5EFE6</color>
+    <color name="gopack_grey_accent">#7F8C8D</color>
+    <color name="gopack_grey_accent_ripple">#407F8C8D</color>
+    <color name="gopack_grey_accent_disabled">#BDBDBD</color>
+
+
+    <color name="item_checked_background">#E8E8E8</color> <color name="item_unchecked_text_color_subtle">#8A000000</color> <color name="item_default_text_color">#DE000000</color> <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
 </resources>

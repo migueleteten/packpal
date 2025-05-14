@@ -1,4 +1,4 @@
-package com.dfmiguel.packpal
+package com.dfmiguel.gopack
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

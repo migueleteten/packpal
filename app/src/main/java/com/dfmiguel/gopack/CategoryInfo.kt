@@ -1,4 +1,4 @@
-package com.dfmiguel.packpal // Asegúrate que coincida con tu paquete
+package com.dfmiguel.gopack // Asegúrate que coincida con tu paquete
 
 import androidx.annotation.DrawableRes // Para el ID del recurso drawable
 

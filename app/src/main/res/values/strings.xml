@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PackPal</string>
+    <string name="app_name">GoPack</string>
     <string name="add_new_trip">Add new trip</string>
     <string name="hint_trip_name">Nombre del Viaje (ej: Vacaciones Verano)</string>
     <string name="hint_trip_destination">Destino (ej: Roma, Italia)</string>
@@ -22,4 +22,11 @@
     <string name="dialog_add">Añadir</string>
     <string name="edit_packing_item">Editar ítem</string>
     <string name="label_category">Categoría</string>
+    <string name="label_packing_list">Lista de Equipaje:</string>
+    <string name="empty_packing_list_message">¡Tu lista de equipaje está vacía!\nAñade ítems o empieza con una de nuestras plantillas.</string>
+    <string name="button_use_template">Usar Plantilla</string>
+    <string name="dialog_title_select_template">Selecciona una Plantilla</string>
+    <string name="start_date_not_defined">Fecha inicio no definida</string>
+    <string name="end_date_not_defined">Fecha fin no definida</string>
+    <string name="title_my_trips">Mis Viajes</string>
 </resources>

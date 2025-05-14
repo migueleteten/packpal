@@ -1,4 +1,4 @@
-package com.dfmiguel.packpal
+package com.dfmiguel.gopack
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -27,4 +27,10 @@ interface TripDao {
 
     @Query("DELETE FROM trips_table") // Consulta para borrar todos los viajes (útil para pruebas o reset)
     suspend fun deleteAllTrips()
+
+    @Query("SELECT COUNT(id) FROM packing_items_table WHERE tripIdOwner = :tripId")
+    suspend fun getTotalItemCountForTrip(tripId: Long): Int
+
+    @Query("SELECT COUNT(id) FROM packing_items_table WHERE tripIdOwner = :tripId AND isChecked = 1") // SQLite usa 1 para true
+    suspend fun getCheckedItemCountForTrip(tripId: Long): Int
 }

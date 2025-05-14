@@ -10,13 +10,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="?attr/actionBarTheme"
-        android:fitsSystemWindows="true"> <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbarTripDetail"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        app:titleTextColor="?attr/colorOnPrimary"
-        app:navigationIconTint="?attr/colorOnPrimary" app:titleMarginStart="24dp"  app:popupTheme="?attr/actionBarPopupTheme" />
+        android:fitsSystemWindows="true">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarTripDetail"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:titleTextColor="?attr/colorOnPrimary"
+            app:navigationIconTint="?attr/colorOnPrimary"
+            app:titleMarginStart="24dp"
+            app:popupTheme="?attr/actionBarPopupTheme" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -24,60 +28,97 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:fillViewport="true"> <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <TextView
-            android:id="@+id/textViewDetailTripDestination"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceSubtitle1"
-            android:layout_marginBottom="4dp"
-            tools:text="Costa Brava, Girona" />
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:orientation="vertical"
+            android:padding="16dp">
 
             <TextView
-                android:id="@+id/textViewDetailStartDate"
-                android:layout_width="0dp"
+                android:id="@+id/textViewDetailTripName"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textAppearance="?attr/textAppearanceCaption"
-                tools:text="Inicio: 2025-07-15" />
+                android:textAppearance="?attr/textAppearanceHeadline5"
+                android:layout_marginBottom="8dp"
+                tools:text="Vacaciones de Verano en la Costa" />
 
             <TextView
-                android:id="@+id/textViewDetailEndDate"
-                android:layout_width="0dp"
+                android:id="@+id/textViewDetailTripDestination"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textAppearance="?attr/textAppearanceCaption"
-                tools:text="Fin: 2025-07-30" />
-        </LinearLayout>
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:layout_marginBottom="4dp"
+                tools:text="Costa Brava, Girona" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Lista de Equipaje:"
-            android:textAppearance="?attr/textAppearanceHeadline6"
-            android:layout_marginBottom="8dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewPackingItems"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:minHeight="100dp" tools:listitem="@layout/item_trip" />
+                <TextView
+                    android:id="@+id/textViewDetailStartDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    tools:text="Inicio: 2025-07-15" />
 
-    </LinearLayout>
+                <TextView
+                    android:id="@+id/textViewDetailEndDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    tools:text="Fin: 2025-07-30" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/textViewPackingListTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_packing_list"
+                android:textAppearance="?attr/textAppearanceHeadline6"
+                android:layout_marginBottom="8dp"/>
+
+            <LinearLayout
+                android:id="@+id/layoutEmptyPackingList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:paddingTop="32dp"
+                android:paddingBottom="32dp"
+                android:visibility="gone" tools:visibility="visible"> <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@mipmap/ic_launcher_round" app:tint="?attr/colorSecondary" android:alpha="0.7" android:layout_marginBottom="16dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/empty_packing_list_message"
+                    android:textAppearance="?attr/textAppearanceBody1"
+                    android:gravity="center"
+                    android:layout_marginBottom="16dp"/>
+
+                <Button
+                    android:id="@+id/buttonUseTemplate"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/button_use_template" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewPackingItems"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" android:minHeight="100dp" tools:listitem="@layout/item_packing_item"
+                android:visibility="visible"/> </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddPackingItem"

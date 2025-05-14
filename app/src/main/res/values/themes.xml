@@ -1,10 +1,45 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.PackPal" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorOnSecondary">@color/black</item>
+    <style name="Theme.GoPack" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/gopack_orange_primary</item> <item name="colorOnPrimary">@color/white</item> <item name="colorSecondary">@color/gopack_grey_accent</item> <item name="colorOnSecondary">@color/white</item> <item name="android:windowBackground">@color/white</item> <item name="colorSurface">@color/white</item> <item name="colorOnBackground">@color/gopack_blue_dark_background</item> <item name="colorOnSurface">@color/gopack_blue_dark_background</item> <item name="android:textColorHint">@color/gopack_grey_accent</item> <item name="android:statusBarColor">?attr/colorPrimary</item> <item name="colorError">#B00020</item> <item name="colorOnError">@color/white</item>
 
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="textInputStyle">@style/GoPack.TextInputLayout.OnWhiteBase</item>
+
+        <item name="materialButtonOutlinedStyle">@style/GoPack.Button.Outlined.OnWhite</item>
+        <item name="materialButtonStyle">@style/GoPack.Button.Contained.OnWhite</item>
+        <item name="materialAlertDialogTheme">@style/Theme.GoPack.Dialog.ForceWhite</item> </style>
+
+    <style name="GoPack.TextInputLayout.OnWhiteBase" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="android:textColor">@color/gopack_blue_dark_background</item> <item name="hintTextColor">@color/gopack_grey_accent</item> <item name="boxStrokeColor">@color/text_input_layout_stroke_color_on_white</item> <item name="colorPrimary">@color/gopack_orange_primary</item> </style>
+
+    <style name="GoPack.Button.Contained.OnWhite" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/gopack_orange_primary</item>
+        <item name="android:textColor">@color/white</item>
     </style>
 
-    <style name="Theme.PackPal" parent="Base.Theme.PackPal" />
+    <style name="GoPack.Button.Outlined.OnWhite" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">@color/gopack_orange_primary</item>
+        <item name="android:textColor">@color/gopack_orange_primary</item>
+    </style>
+
+    <style name="Theme.GoPack.Dialog.ForceWhite" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/gopack_blue_dark_background</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/GoPack.Dialog.TitleText.OnWhite</item>
+        <item name="buttonBarPositiveButtonStyle">@style/GoPack.Dialog.Button.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/GoPack.Dialog.Button.Negative.OnWhite</item>
+    </style>
+
+    <style name="GoPack.Dialog.TitleText.OnWhite" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:textColor">@color/gopack_blue_dark_background</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+    <style name="GoPack.Dialog.Button.Positive" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/gopack_orange_primary</item>
+        <item name="rippleColor">@color/gopack_orange_primary_ripple</item>
+    </style>
+    <style name="GoPack.Dialog.Button.Negative.OnWhite" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/gopack_grey_accent</item>
+        <item name="rippleColor">@color/gopack_grey_accent_ripple</item>
+    </style>
+
 </resources>

@@ -1,8 +1,7 @@
-package com.dfmiguel.packpal // Asegúrate que coincida con tu paquete
+package com.dfmiguel.gopack // Asegúrate que coincida con tu paquete
 
 import android.os.Bundle
 import android.app.DatePickerDialog
-import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -23,7 +22,7 @@ class AddTripActivity : AppCompatActivity() {
     private lateinit var buttonSaveTrip: Button
 
     // Obtenemos el DAO de nuestra clase Application
-    private val tripDao by lazy { (application as PackPalApplication).tripDao }
+    private val tripDao by lazy { (application as GoPackApplication).tripDao }
 
     // Define el formato de fecha que queremos usar
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())

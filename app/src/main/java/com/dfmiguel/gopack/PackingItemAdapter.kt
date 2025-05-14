@@ -1,6 +1,7 @@
-package com.dfmiguel.packpal // Asegúrate que coincida con tu paquete
+package com.dfmiguel.gopack // Asegúrate que coincida con tu paquete
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.graphics.Paint // Para tachar texto
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import android.widget.ImageButton
 import android.widget.ImageView // Importar ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -63,9 +65,21 @@ class PackingItemAdapter(
 
             // Aplicar/quitar tachado según isChecked (esto se hace después de setear isChecked)
             if (item.isChecked) {
+                // Ítem MARCADO
+                itemView.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.gopack_grey_accent_disabled))  // Fondo sutil
                 textViewItemName.paintFlags = textViewItemName.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 textViewItemCategory.paintFlags = textViewItemCategory.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                // Opcional: cambiar color de texto si el fondo cambia mucho
+                // textViewItemName.setTextColor(ContextCompat.getColor(itemView.context, R.color.algún_color_oscuro_para_fondo_claro_marcado))
+
             } else {
+                // Ítem NO MARCADO
+                itemView.setBackgroundColor(Color.TRANSPARENT) // Fondo normal (o el original del item)
+                // Opcional: Atenuar el texto de los ítems no marcados
+                // textViewItemName.setTextColor(ContextCompat.getColor(itemView.context, R.color.item_unchecked_text_color_subtle))
+                // Si haces lo de arriba, asegúrate de poner el color normal cuando está marcado:
+                // textViewItemName.setTextColor(ContextCompat.getColor(itemView.context, R.color.item_default_text_color)) // en el bloque if(item.isChecked)
+
                 textViewItemName.paintFlags = textViewItemName.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 textViewItemCategory.paintFlags = textViewItemCategory.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
             }
