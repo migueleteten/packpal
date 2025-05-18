@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow // Importante para datos reactivos
 interface TripDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE) // Si insertamos un viaje con un ID que ya existe, lo reemplazará
-    suspend fun insertTrip(trip: Trip) // 'suspend' para usarlo con Coroutines (asíncrono)
+    suspend fun insertTrip(trip: Trip): Long // 'suspend' para usarlo con Coroutines (asíncrono)
 
     @Update
     suspend fun updateTrip(trip: Trip)
@@ -19,7 +19,7 @@ interface TripDao {
     @Delete
     suspend fun deleteTrip(trip: Trip)
 
-    @Query("SELECT * FROM trips_table ORDER BY name ASC") // Consulta SQL para obtener todos los viajes, ordenados por nombre
+    @Query("SELECT * FROM trips_table ORDER BY startDate ASC") // Consulta SQL para obtener todos los viajes, ordenados por nombre
     fun getAllTrips(): Flow<List<Trip>> // Devuelve un Flow, que permite observar cambios en los datos de forma reactiva
 
     @Query("SELECT * FROM trips_table WHERE id = :tripId") // Consulta para obtener un viaje por su ID

@@ -10,7 +10,6 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.view.LayoutInflater
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -19,9 +18,13 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 
 class AddPackingItemDialogFragment : DialogFragment() {
 
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
     private var tripIdOwner: Long = -1L
     private var editingItemId: Long? = null
     private var existingPackingItem: PackingItem? = null
@@ -60,6 +63,7 @@ class AddPackingItemDialogFragment : DialogFragment() {
     // ya que el Fragment está adjunto a la Activity y tenemos un Context.
     override fun onAttach(context: Context) {
         super.onAttach(context)
+        firebaseAnalytics = Firebase.analytics
         // Inicializamos el DAO aquí, usando el 'context' de la Activity
         // que ahora sabemos que existe.
         packingItemDao = (context.applicationContext as GoPackApplication).packingItemDao
@@ -71,6 +75,7 @@ class AddPackingItemDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        firebaseAnalytics = Firebase.analytics
         arguments?.let {
             tripIdOwner = it.getLong(ARG_TRIP_ID, -1L)
             if (it.containsKey(ARG_EDIT_ITEM_ID)) {
@@ -167,6 +172,15 @@ class AddPackingItemDialogFragment : DialogFragment() {
                             quantity = itemQuantity
                         )
                         packingItemDao.insertPackingItem(newItem)
+
+                        val itemParams = Bundle().apply {
+                            putString("item_category", itemCategoryInternalName)
+                            putString("item_name", itemName)
+                            putInt("item_name_length", itemName.length)
+                            putInt("item_quantity", itemQuantity)
+                        }
+                        firebaseAnalytics.logEvent("item_added", itemParams)
+
                         Toast.makeText(requireContext(), "Ítem '${newItem.name}' añadido", Toast.LENGTH_SHORT).show()
                     }
                     dialog.dismiss()

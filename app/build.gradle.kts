@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("org.jetbrains.kotlin.kapt")
+    alias(libs.plugins.google.gms.services) // ¡AÑADIR ESTE!
+    alias(libs.plugins.firebase.crashlytics) // ¡AÑADIR ESTE!
 }
 
 android {
@@ -53,4 +55,13 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx) // Kotlin Extensions and Coroutines support for Room
     kapt(libs.androidx.room.compiler)
+
+    // Firebase BoM (Bill of Materials) - Importante para gestionar versiones de Firebase
+    implementation(platform(libs.firebase.bom))
+
+    // Firebase Analytics (KTX significa extensiones de Kotlin, recomendado)
+    implementation(libs.firebase.analytics.ktx)
+
+    // Firebase Crashlytics (KTX)
+    implementation(libs.firebase.crashlytics.ktx)
 }

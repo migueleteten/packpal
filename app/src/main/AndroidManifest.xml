@@ -27,7 +27,8 @@
             android:name=".AddTripActivity"
             android:exported="false"
             android:label="@string/title_activity_add_trip"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".MainActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />

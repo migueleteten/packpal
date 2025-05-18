@@ -1,6 +1,5 @@
 package com.dfmiguel.gopack // Asegúrate que coincida con tu paquete
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -22,9 +21,13 @@ import androidx.appcompat.app.AlertDialog // Para el diálogo
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlin.getValue
 import androidx.recyclerview.widget.ItemTouchHelper
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 
 class TripDetailActivity : AppCompatActivity() {
 
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
     private lateinit var toolbarTripDetail: MaterialToolbar
     private lateinit var textViewDetailTripName: TextView
     private lateinit var textViewDetailTripDestination: TextView
@@ -51,6 +54,7 @@ class TripDetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        firebaseAnalytics = Firebase.analytics
         setContentView(R.layout.activity_trip_detail)
 
         toolbarTripDetail = findViewById(R.id.toolbarTripDetail)
@@ -120,6 +124,12 @@ class TripDetailActivity : AppCompatActivity() {
                 val updatedItem = item.copy(isChecked = isChecked)
                 lifecycleScope.launch {
                     packingItemDao.updatePackingItem(updatedItem)
+                    val checkedParams = Bundle().apply {
+                        putString("item_category", item.category) // Categoría del ítem
+                        putString("checked_state", if (isChecked) "true" else "false") // Estado final
+                        putString("item_name", item.name)
+                    }
+                    firebaseAnalytics.logEvent("item_checked", checkedParams)
                 }
             },
             onEditItemClicked = { item ->
@@ -165,6 +175,13 @@ class TripDetailActivity : AppCompatActivity() {
         val updatedItem = item.copy(isChecked = newItemState)
         lifecycleScope.launch {
             packingItemDao.updatePackingItem(updatedItem)
+
+            val checkedParams = Bundle().apply {
+                putString("item_category", item.category) // Categoría del ítem
+                putString("checked_state", if (newItemState) "true" else "false") // Estado final
+                putString("item_name", item.name)
+            }
+            firebaseAnalytics.logEvent("item_checked", checkedParams)
             // El Toast es opcional, el feedback visual del swipe y el cambio de estado en la lista
             // (tachado/destachado y el checkbox) deberían ser suficientes.
             // Toast.makeText(this, "${updatedItem.name} ${if (newItemState) "marcado" else "desmarcado"}", Toast.LENGTH_SHORT).show()
@@ -224,14 +241,15 @@ class TripDetailActivity : AppCompatActivity() {
                     isChecked = false // Las plantillas siempre empiezan con ítems no marcados
                 )
             }
-
-            // Room es suficientemente inteligente para manejar esto en una transacción si se llama desde un suspend fun.
-            // Para muchas inserciones, un método DAO que acepte List<PackingItem> y lo haga en una transacción sería más óptimo.
-            // Por ahora, para el MVP, esto funcionará.
             itemsToInsert.forEach { packingItemDao.insertPackingItem(it) }
 
             Toast.makeText(this@TripDetailActivity, "Plantilla '${template.templateName}' cargada.", Toast.LENGTH_LONG).show()
             // El Flow en observePackingItems() se encargará de actualizar la UI.
+            val templateParams = Bundle().apply {
+                putString("template_name", template.templateName)
+                putInt("item_count_in_template", template.items.size)
+            }
+            firebaseAnalytics.logEvent("template_used", templateParams)
         }
     }
 
@@ -243,8 +261,6 @@ class TripDetailActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_edit_trip -> {
-                //Toast.makeText(this, "Editar Viaje ID: $currentTripId", Toast.LENGTH_SHORT).show() // Comentamos o borramos el Toast
-
                 // Lanzar AddTripActivity en modo edición
                 if (currentTripId != -1L) { // Asegurarnos de que tenemos un ID válido
                     val intent = Intent(this, AddTripActivity::class.java).apply {
@@ -265,20 +281,6 @@ class TripDetailActivity : AppCompatActivity() {
     }
 
     private fun showDeleteConfirmationDialog() {
-        // Asegurarnos de que tenemos un viaje cargado para mostrar su nombre y para borrarlo
-        // La variable 'existingTrip' la deberíamos tener de cuando cargamos los datos para mostrar.
-        // Si no la tienes como variable de clase, necesitarías cargarla o pasar el nombre.
-        // Asumiré que tienes 'existingTrip: Trip?' como variable de clase que se setea en 'observeTripDetails'
-        // Si 'existingTrip' no es una variable de clase, necesitarás recuperarlo o pasar el nombre.
-        // Por simplicidad, si existingTrip no está como variable de clase aún, carguémoslo para asegurar:
-
-        // Modificación: Asegurémonos que existingTrip (variable de clase) está disponible o la cargamos
-        // Si ya tienes existingTrip como variable de clase que se actualiza en observeTripDetails, esto es redundante.
-        // Si no, necesitarías una forma de acceder al nombre del viaje actual.
-        // Vamos a asumir que 'existingTrip' es una variable de clase que se actualiza en 'observeTripDetails'.
-        // Si 'existingTrip' no está definido como variable de clase, deberás hacerlo:
-        // private var existingTrip: Trip? = null (y la actualizas en observeTripDetails)
-
         val tripNameToDelete = supportActionBar?.title.toString() // Usamos el título de la ActionBar que ya tiene el nombre
 
         AlertDialog.Builder(this)
@@ -298,26 +300,6 @@ class TripDetailActivity : AppCompatActivity() {
     private fun deleteCurrentTrip() {
         if (currentTripId != -1L) {
             lifecycleScope.launch {
-                // Para borrar con tripDao.deleteTrip(trip), necesitamos el objeto Trip.
-                // Si no lo tenemos a mano (ej. no es variable de clase 'existingTrip'),
-                // podríamos crear un método en el DAO para borrar por ID o cargarlo primero.
-                // Asumamos que SÍ tenemos existingTrip como variable de clase. Si no, hay que ajustar.
-
-                // Manera A: Si tenemos el objeto 'existingTrip' como variable de clase y actualizado:
-                // tripDao.getTripById(currentTripId).collectLatest { tripToDelete ->
-                //    if (tripToDelete != null) {
-                //        tripDao.deleteTrip(tripToDelete)
-                //        Toast.makeText(this@TripDetailActivity, "Viaje borrado", Toast.LENGTH_SHORT).show()
-                //        finish() // Volver a MainActivity
-                //    }
-                // }
-                // Esta forma de arriba es más segura porque siempre borra el objeto más actual.
-                // Pero requiere que 'existingTrip' sea una variable de clase bien gestionada o hacer la consulta.
-
-                // Manera B: Crear un Trip solo con el ID (si el DAO lo soportara para delete, pero el nuestro espera un Trip)
-                // O, mejor, modificamos el DAO para tener un deleteById o borramos el objeto que ya teníamos.
-                // Para usar el tripDao.deleteTrip(trip: Trip) que tenemos, necesitamos el objeto Trip.
-                // Si 'existingTrip' es una variable de clase que se actualiza en observeTripDetails:
                 tripDao.getTripById(currentTripId).collectLatest { tripNullable -> // Usamos collectLatest para obtener el valor más reciente
                     tripNullable?.let { tripToDelete ->
                         lifecycleScope.launch { // Nueva coroutine para la operación DAO
@@ -327,8 +309,6 @@ class TripDetailActivity : AppCompatActivity() {
                         }
                     }
                 }
-                // Si 'existingTrip' no estuviera disponible o actualizado, tendríamos que volver a cargarlo aquí
-                // antes de llamar a tripDao.deleteTrip(existingTrip!!).
             }
         } else {
             Toast.makeText(this, "Error: No se pudo borrar el viaje", Toast.LENGTH_SHORT).show()
@@ -337,14 +317,14 @@ class TripDetailActivity : AppCompatActivity() {
 
     // Para manejar el botón de "Atrás" de la ActionBar
     override fun onSupportNavigateUp(): Boolean {
-        setResult(Activity.RESULT_OK) // Indicar que algo pudo cambiar
+        setResult(RESULT_OK) // Indicar que algo pudo cambiar
         finish() // O onBackPressedDispatcher.onBackPressed()
         return true
     }
 
     // Y para el botón "atrás" del sistema, modificamos finish()
     override fun finish() {
-        setResult(Activity.RESULT_OK) // Asegurar que se devuelve resultado
+        setResult(RESULT_OK) // Asegurar que se devuelve resultado
         super.finish()
     }
 
@@ -379,6 +359,13 @@ class TripDetailActivity : AppCompatActivity() {
     // NUEVA FUNCIÓN para borrar el ítem
     private fun deletePackingItem(item: PackingItem) {
         lifecycleScope.launch {
+            val deleteParams = Bundle().apply {
+                putString("item_name", item.name)
+                putString("item_category", item.category)
+                putInt("item_quantity", item.quantity)
+                putBoolean("was_checked", item.isChecked)
+            }
+            firebaseAnalytics.logEvent("item_deleted", deleteParams)
             packingItemDao.deletePackingItem(item)
             Toast.makeText(this@TripDetailActivity, "Ítem '${item.name}' borrado", Toast.LENGTH_SHORT).show()
             // La lista se actualiza automáticamente gracias al Flow y ListAdapter

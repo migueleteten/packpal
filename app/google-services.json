@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "923041173863",
+    "project_id": "gopack-app",
+    "storage_bucket": "gopack-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:923041173863:android:7cd3a62c590c886d9edfc2",
+        "android_client_info": {
+          "package_name": "com.dfmiguel.gopack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApdCKgxwo8RpXqVNXh5mPkvKRaNwKLmt4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

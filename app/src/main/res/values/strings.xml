@@ -6,7 +6,8 @@
     <string name="hint_start_date_optional">Fecha Inicio (AAAA-MM-DD - Opcional)</string>
     <string name="hint_end_date_optional">Fecha Fin (AAAA-MM-DD - Opcional)</string>
     <string name="button_save_trip">Guardar Viaje</string>
-    <string name="title_activity_add_trip">Añadir Nuevo Viaje</string>
+    <string name="title_activity_add_trip">¡Prepara una Nueva Aventura!</string>
+    <string name="title_activity_update_trip">Actualizar Viaje</string>
     <string name="add_new_packing_item">Añadir nuevo ítem al equipaje</string>
     <string name="title_activity_trip_detail">Detalles del Viaje</string>
     <string name="action_edit_trip">Editar</string>
@@ -23,10 +24,13 @@
     <string name="edit_packing_item">Editar ítem</string>
     <string name="label_category">Categoría</string>
     <string name="label_packing_list">Lista de Equipaje:</string>
-    <string name="empty_packing_list_message">¡Tu lista de equipaje está vacía!\nAñade ítems o empieza con una de nuestras plantillas.</string>
+    <string name="empty_packing_list_message">¡Tu lista de equipaje está vacía!\nAñade ítems o empieza con una plantilla.</string>
     <string name="button_use_template">Usar Plantilla</string>
     <string name="dialog_title_select_template">Selecciona una Plantilla</string>
     <string name="start_date_not_defined">Fecha inicio no definida</string>
     <string name="end_date_not_defined">Fecha fin no definida</string>
     <string name="title_my_trips">Mis Viajes</string>
+    <string name="empty_main_activity_message">¡Prepara tu Próxima Aventura!</string>
+    <string name="empty_main_activity_submessage">Parece que aún no tienes viajes. ¡Empieza a planificar pulsando el botón de abajo o el "+"!</string>
+    <string name="button_create_first_trip">Crear Mi Primer Viaje</string>
 </resources>

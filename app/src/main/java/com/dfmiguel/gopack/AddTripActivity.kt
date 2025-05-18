@@ -2,19 +2,27 @@ package com.dfmiguel.gopack // Asegúrate que coincida con tu paquete
 
 import android.os.Bundle
 import android.app.DatePickerDialog
+import android.content.Intent
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat // Para formatear la fecha
 import java.util.Calendar // Para obtener la fecha actual y trabajar con fechas
 import java.util.Locale // Para el formato de fecha
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 
 class AddTripActivity : AppCompatActivity() {
 
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
+    private lateinit var toolbarAddTrip: MaterialToolbar
     private lateinit var editTextTripName: TextInputEditText
     private lateinit var editTextTripDestination: TextInputEditText
     private lateinit var editTextStartDate: TextInputEditText
@@ -36,7 +44,12 @@ class AddTripActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        firebaseAnalytics = Firebase.analytics
         setContentView(R.layout.activity_add_trip)
+
+        toolbarAddTrip = findViewById(R.id.toolbarAddTrip) // NUEVO
+        setSupportActionBar(toolbarAddTrip)                 // NUEVO
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         // Cambiar el título de la ActionBar para esta Activity
         title = getString(R.string.title_activity_add_trip) // Usamos el string que definimos
@@ -56,12 +69,13 @@ class AddTripActivity : AppCompatActivity() {
         }
 
         if (currentTripId != null) {
-            title = "Editar Viaje" // Cambiamos título
-            buttonSaveTrip.text = "Actualizar Viaje" // Cambiamos texto del botón
-            loadTripData(currentTripId!!) // Cargamos los datos del viaje
+            // Asumiendo que tienes 'existingTrip' cargado para el modo edición
+            // supportActionBar?.title = "Editar Viaje: ${existingTrip?.name ?: ""}"
+            buttonSaveTrip.text = getString(R.string.title_activity_update_trip)
+            loadTripData(currentTripId!!)
         } else {
-            title = getString(R.string.title_activity_add_trip) // Título original
-            buttonSaveTrip.text = getString(R.string.button_save_trip) // Texto original
+            supportActionBar?.title = getString(R.string.title_activity_add_trip) // O tu string de aventura
+            buttonSaveTrip.text = getString(R.string.button_save_trip)
         }
 
         buttonSaveTrip.setOnClickListener {
@@ -83,6 +97,14 @@ class AddTripActivity : AppCompatActivity() {
         editTextEndDate.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) showDatePickerDialog(isStartDate = false)
         }
+
+        if (currentTripId == null) {
+            editTextTripName.requestFocus()
+            editTextTripName.post { // Ejecuta después de que la vista haya sido medida y layoutada
+                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(editTextTripName, InputMethodManager.SHOW_IMPLICIT)
+            }
+        }
     }
 
     private fun loadTripData(tripId: Long) {
@@ -94,6 +116,10 @@ class AddTripActivity : AppCompatActivity() {
                     editTextTripDestination.setText(trip.destination)
                     editTextStartDate.setText(trip.startDate ?: "") // Ponemos string vacío si es null
                     editTextEndDate.setText(trip.endDate ?: "")   // Ponemos string vacío si es null
+
+                    if (currentTripId != null) { // Doble check por si acaso, aunque ya estamos en modo edición
+                        supportActionBar?.title = "Editar viaje: ${trip.name}" // Usamos trip.name directamente
+                    }
                 } else {
                     Toast.makeText(this@AddTripActivity, "Error al cargar datos del viaje para editar", Toast.LENGTH_LONG).show()
                     finish() // Si no podemos cargar el viaje, cerramos
@@ -115,9 +141,8 @@ class AddTripActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            if (currentTripId != null && existingTrip != null) {
-                // Modo Edición: Actualizar viaje existente
-                val updatedTrip = existingTrip!!.copy( // Creamos una copia con los nuevos valores
+            if (currentTripId != null && existingTrip != null) { // Modo Edición
+                val updatedTrip = existingTrip!!.copy(
                     name = tripName,
                     destination = tripDestination,
                     startDate = startDate,
@@ -125,18 +150,38 @@ class AddTripActivity : AppCompatActivity() {
                 )
                 tripDao.updateTrip(updatedTrip)
                 Toast.makeText(this@AddTripActivity, "Viaje '${updatedTrip.name}' actualizado", Toast.LENGTH_LONG).show()
-            } else {
-                // Modo Añadir: Insertar nuevo viaje
+                finish() // En modo edición, simplemente cerramos y volvemos a TripDetailActivity (o donde sea que se llamó)
+            } else { // Modo Añadir Nuevo Viaje
                 val newTrip = Trip(
                     name = tripName,
                     destination = tripDestination,
                     startDate = startDate,
                     endDate = endDate
                 )
-                tripDao.insertTrip(newTrip)
-                Toast.makeText(this@AddTripActivity, "Viaje '$tripName' guardado", Toast.LENGTH_LONG).show()
+                val newTripId = tripDao.insertTrip(newTrip) // Obtener el ID del viaje recién insertado
+
+                if (newTripId != -1L) { // Room devuelve -1 en error, aunque con OnConflictStrategy.REPLACE es raro
+                    Toast.makeText(this@AddTripActivity, "Viaje '$tripName' guardado", Toast.LENGTH_LONG).show()
+
+                    // ¡NUESTRO PRIMER EVENTO DE ANALYTICS - FORMA ACTUALIZADA!
+                    val params = Bundle().apply {
+                        // Opcional: puedes añadir parámetros para dar más contexto al evento
+                        putString("destination_name", tripDestination) // Ejemplo de parámetro String
+                        putInt("name_length", tripName.length)      // Ejemplo de parámetro Int
+                        putBoolean("has_start_date", (startDate != null)) // Ejemplo de parámetro Boolean
+                    }
+                    firebaseAnalytics.logEvent("trip_created", params) // Pasamos el Bundle
+
+                    // NAVEGAR AL DETALLE DEL VIAJE RECIÉN CREADO
+                    val intent = Intent(this@AddTripActivity, TripDetailActivity::class.java).apply {
+                        putExtra(TripDetailActivity.EXTRA_TRIP_ID, newTripId)
+                    }
+                    startActivity(intent)
+                    finish() // Cierra AddTripActivity para que al pulsar "atrás" en TripDetailActivity no volvamos aquí
+                } else {
+                    Toast.makeText(this@AddTripActivity, "Error al guardar el viaje", Toast.LENGTH_LONG).show()
+                }
             }
-            finish() // Cierra esta actividad y vuelve a la anterior
         }
     }
 
@@ -145,11 +190,7 @@ class AddTripActivity : AppCompatActivity() {
         // Si el EditText ya tiene una fecha, intentamos usarla como fecha inicial del diálogo
         val currentEditText = if (isStartDate) editTextStartDate else editTextEndDate
         if (currentEditText.text.toString().isNotEmpty()) {
-            try {
-                calendar.time = dateFormat.parse(currentEditText.text.toString()) ?: Calendar.getInstance().time
-            } catch (e: Exception) {
-                // si hay error parseando, usar fecha actual
-            }
+            calendar.time = dateFormat.parse(currentEditText.text.toString()) ?: Calendar.getInstance().time
         }
 
         val year = calendar.get(Calendar.YEAR)

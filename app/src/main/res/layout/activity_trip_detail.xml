@@ -91,10 +91,14 @@
                 android:gravity="center_horizontal"
                 android:paddingTop="32dp"
                 android:paddingBottom="32dp"
-                android:visibility="gone" tools:visibility="visible"> <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:src="@mipmap/ic_launcher_round" app:tint="?attr/colorSecondary" android:alpha="0.7" android:layout_marginBottom="16dp"/>
+                android:visibility="gone" tools:visibility="visible">
+
+                <ImageView
+                    android:layout_width="147dp"
+                    android:layout_height="141dp"
+                    android:layout_marginBottom="16dp"
+                    android:alpha="0.2"
+                    android:src="@mipmap/ic_launcher_round" />
 
                 <TextView
                     android:layout_width="wrap_content"

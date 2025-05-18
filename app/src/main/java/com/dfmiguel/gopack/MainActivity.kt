@@ -1,6 +1,6 @@
 package com.dfmiguel.gopack
 
-import android.app.Activity
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -8,12 +8,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import android.widget.Button
+import android.widget.LinearLayout
+import android.view.View
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,6 +23,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerViewTrips: RecyclerView
     private lateinit var fabAddTrip: FloatingActionButton
     private lateinit var tripAdapter: TripAdapter // Declara el adaptador
+
+    private lateinit var layoutEmptyStateMain: LinearLayout // NUEVA VARIABLE
+    private lateinit var buttonCreateFirstTrip: Button    // NUEVA VARIABLE
 
     private val tripDetailLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
@@ -39,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     // Obtenemos el DAO de nuestra clase Application
     private val tripDao by lazy { (application as GoPackApplication).tripDao }
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -48,14 +54,22 @@ class MainActivity : AppCompatActivity() {
 
         recyclerViewTrips = findViewById(R.id.recyclerViewTrips)
         fabAddTrip = findViewById(R.id.fabAddTrip)
+        layoutEmptyStateMain = findViewById(R.id.layoutEmptyStateMain)
+        buttonCreateFirstTrip = findViewById(R.id.buttonCreateFirstTrip)
 
         setupRecyclerView()
         observeTrips() // Nueva función para observar los viajes desde la BD
 
-        fabAddTrip.setOnClickListener {
+        val addTripClickListener = View.OnClickListener {
             val intent = Intent(this, AddTripActivity::class.java)
+            // Considera usar un ActivityResultLauncher aquí también si AddTripActivity
+            // necesitara devolver un resultado que MainActivity deba procesar directamente
+            // al crear un viaje (aunque el Flow ya actualiza la lista).
             startActivity(intent)
         }
+
+        fabAddTrip.setOnClickListener(addTripClickListener)
+        buttonCreateFirstTrip.setOnClickListener(addTripClickListener)
     }
 
     private fun setupRecyclerView() {
@@ -70,13 +84,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun observeTrips() {
-        // Usamos lifecycleScope para que la coroutine se cancele automáticamente
-        // cuando la Activity se destruya, evitando fugas de memoria.
         lifecycleScope.launch {
-            tripDao.getAllTrips().collect { tripsFromDb ->
-                Log.d("MainActivity", "Viajes desde BD: ${tripsFromDb.size}") // Log para depurar
-                tripAdapter.submitList(tripsFromDb)  // Notificamos al adaptador que los datos cambiaron
-                // Más adelante, usaremos DiffUtil para actualizaciones más eficientes
+            // tripDao.getAllTrips().collectLatest { tripsFromDb -> // Usar collectLatest es buena práctica aquí
+            tripDao.getAllTrips().collect { tripsFromDb -> // O collect si no hay problemas de concurrencia con múltiples emisiones rápidas
+                Log.d("MainActivity", "Viajes desde BD: ${tripsFromDb.size}")
+                if (tripsFromDb.isEmpty()) {
+                    recyclerViewTrips.visibility = View.GONE
+                    layoutEmptyStateMain.visibility = View.VISIBLE
+                } else {
+                    recyclerViewTrips.visibility = View.VISIBLE
+                    layoutEmptyStateMain.visibility = View.GONE
+                }
+                tripAdapter.submitList(tripsFromDb)
             }
         }
     }
